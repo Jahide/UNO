@@ -1,0 +1,512 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Sign Up - UNO Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            max-width: 400px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #ff6f61;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            background-color: #e65a50;
+        }
+
+        .game-card {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .game-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .invite-link {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background-color: white;
+            color: black;
+            padding: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .waiting-message {
+            margin: 20px 0;
+            font-size: 18px;
+            color: #fff;
+        }
+
+        #loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #fff;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="login-container">
+        <h1>Login</h1>
+        <form id="login-form">
+            <div class="form-group">
+                <label for="login-email">Email</label>
+                <input type="email" id="login-email" name="login-email" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+                <label for="login-password">Password</label>
+                <input type="password" id="login-password" name="login-password" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="btn">Login</button>
+        </form>
+        <div class="toggle">
+            Don't have an account? <a href="#" id="show-signup">Sign up here</a>
+        </div>
+    </div>
+
+    <div class="container" id="signup-container" style="display: none;">
+        <h1>Sign Up</h1>
+        <form id="signup-form">
+            <div class="form-group">
+                <label for="signup-name">Name</label>
+                <input type="text" id="signup-name" name="signup-name" placeholder="Enter your name" required>
+            </div>
+            <div class="form-group">
+                <label for="signup-email">Email</label>
+                <input type="email" id="signup-email" name="signup-email" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+                <label for="signup-password">Password</label>
+                <input type="password" id="signup-password" name="signup-password" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="btn">Sign Up</button>
+        </form>
+        <div class="toggle">
+            Already have an account? <a href="#" id="show-login">Login here</a>
+        </div>
+    </div>
+
+    <div class="container" id="homepage-container" style="display: none;">
+        <h1>Welcome</h1>
+        <p id="user-info"></p>
+        <div class="game-card" id="uno-card">
+            <h2>UNO</h2>
+            <p>Play the classic card game online with friends!</p>
+        </div>
+    </div>
+
+    <div class="container" id="game-options-container" style="display: none;">
+        <h1>UNO Game Options</h1>
+        <div class="game-options">
+            <button class="btn" id="matchmaking-btn">Quick Match</button>
+            <button class="btn" id="create-room-btn">Create Private Room</button>
+        </div>
+        <div id="invite-link-container" style="display: none;">
+            <p>Share this link with your friend:</p>
+            <div class="invite-link" id="invite-link"></div>
+            <button class="btn" id="copy-link-btn">Copy Link</button>
+        </div>
+        <div id="loading-spinner" style="display: none;"></div>
+        <p class="waiting-message" id="waiting-message" style="display: none;">
+            Waiting for other players...
+        </p>
+    </div>
+
+    <div class="container" id="game-container" style="display: none;">
+        <h1>UNO Game</h1>
+        <div id="game-status"></div>
+        <div id="current-card"></div>
+        <div id="player-hand" class="game-board"></div>
+    </div>
+
+    <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+import { getDatabase, ref, set, get, child, onValue, update } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyC0oFRirzQtAs44Nh6I2tkotA2SxqCP8k4",
+    authDomain: "login-to-266e4.firebaseapp.com",
+    databaseURL: "https://login-to-266e4-default-rtdb.firebaseio.com",
+    projectId: "login-to-266e4",
+    storageBucket: "login-to-266e4.appspot.com",
+    messagingSenderId: "453457055009",
+    appId: "1:453457055009:web:fce6efb2b9f8b28c85c260"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const database = getDatabase(app);
+
+// DOM Elements
+const containers = {
+    login: document.getElementById('login-container'),
+    signup: document.getElementById('signup-container'),
+    homepage: document.getElementById('homepage-container'),
+    gameOptions: document.getElementById('game-options-container'),
+    game: document.getElementById('game-container')
+};
+
+const elements = {
+    userInfo: document.getElementById('user-info'),
+    showSignup: document.getElementById('show-signup'),
+    showLogin: document.getElementById('show-login'),
+    loginForm: document.getElementById('login-form'),
+    signupForm: document.getElementById('signup-form'),
+    unoCard: document.getElementById('uno-card'),
+    matchmakingBtn: document.getElementById('matchmaking-btn'),
+    createRoomBtn: document.getElementById('create-room-btn'),
+    inviteLinkContainer: document.getElementById('invite-link-container'),
+    inviteLink: document.getElementById('invite-link'),
+    copyLinkBtn: document.getElementById('copy-link-btn'),
+    loadingSpinner: document.getElementById('loading-spinner'),
+    waitingMessage: document.getElementById('waiting-message'),
+    gameStatus: document.getElementById('game-status'),
+    currentCard: document.getElementById('current-card'),
+    playerHand: document.getElementById('player-hand')
+};
+
+// Auth State Listener
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        const userRef = ref(database, `users/${user.uid}`);
+        get(userRef).then((snapshot) => {
+            if (snapshot.exists()) {
+                const userData = snapshot.val();
+                elements.userInfo.textContent = `Welcome, ${userData.name}! (Email: ${userData.email})`;
+                showContainer('homepage');
+            }
+        }).catch((error) => {
+            console.error("User data error:", error);
+            alert("Error loading user data");
+        });
+    } else {
+        showContainer('login');
+    }
+});
+
+// Helper Functions
+function showContainer(containerId) {
+    Object.values(containers).forEach(container => {
+        container.style.display = 'none';
+    });
+    containers[containerId].style.display = 'block';
+}
+
+function generateRoomId() {
+    return Math.random().toString(36).substring(2, 9);
+}
+
+// Event Listeners
+elements.showSignup.addEventListener('click', () => showContainer('signup'));
+elements.showLogin.addEventListener('click', () => showContainer('login'));
+
+elements.signupForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('signup-name').value.trim();
+    const email = document.getElementById('signup-email').value.trim();
+    const password = document.getElementById('signup-password').value.trim();
+
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        await set(ref(database, `users/${userCredential.user.uid}`), {
+            name: name,
+            email: email
+        });
+        alert('Account created! Please login.');
+        elements.signupForm.reset();
+        showContainer('login');
+    } catch (error) {
+        alert(`Error: ${error.message}`);
+    }
+});
+
+elements.loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value.trim();
+
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+        alert(`Login failed: ${error.message}`);
+    }
+});
+
+elements.unoCard.addEventListener('click', () => {
+    showContainer('gameOptions');
+});
+
+// Game Functions
+elements.matchmakingBtn.addEventListener('click', async () => {
+    elements.loadingSpinner.style.display = 'block';
+    elements.waitingMessage.style.display = 'block';
+
+    try {
+        const roomId = await createRoom();
+        listenToRoom(roomId);
+    } catch (error) {
+        alert(`Matchmaking error: ${error.message}`);
+        elements.loadingSpinner.style.display = 'none';
+        elements.waitingMessage.style.display = 'none';
+    }
+});
+
+elements.createRoomBtn.addEventListener('click', async () => {
+    try {
+        const roomId = generateRoomId();
+        await createRoom(roomId);
+        const inviteLink = `${window.location.origin}?room=${roomId}`;
+        elements.inviteLink.textContent = inviteLink;
+        elements.inviteLinkContainer.style.display = 'block';
+        elements.loadingSpinner.style.display = 'block';
+        elements.waitingMessage.style.display = 'block';
+        listenToRoom(roomId);
+    } catch (error) {
+        alert(`Room creation error: ${error.message}`);
+    }
+});
+
+// Copy Link Button
+elements.copyLinkBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(elements.inviteLink.textContent)
+        .then(() => alert('Link copied to clipboard!'))
+        .catch(err => alert('Failed to copy link'));
+});
+
+async function createRoom(roomId = generateRoomId()) {
+    const user = auth.currentUser;
+    const userSnapshot = await get(ref(database, `users/${user.uid}`));
+    const userData = userSnapshot.val();
+
+    await set(ref(database, `rooms/${roomId}`), {
+        status: 'waiting',
+        players: {
+            [user.uid]: {
+                name: userData.name,
+                ready: true
+            }
+        },
+        created: Date.now(),
+        isPrivate: true
+    });
+
+    return roomId;
+}
+
+async function joinRoom(roomId) {
+    try {
+        const user = auth.currentUser;
+        const roomRef = ref(database, `rooms/${roomId}`);
+        const roomSnapshot = await get(roomRef);
+
+        if (!roomSnapshot.exists()) {
+            alert('Room does not exist');
+            return;
+        }
+
+        const userSnapshot = await get(ref(database, `users/${user.uid}`));
+        const userData = userSnapshot.val();
+
+        await update(ref(database, `rooms/${roomId}/players/${user.uid}`), {
+            name: userData.name,
+            ready: true
+        });
+
+        showContainer('gameOptions');
+        elements.inviteLinkContainer.style.display = 'none';
+        elements.loadingSpinner.style.display = 'block';
+        elements.waitingMessage.style.display = 'block';
+        listenToRoom(roomId);
+
+    } catch (error) {
+        alert(`Join error: ${error.message}`);
+    }
+}
+
+function listenToRoom(roomId) {
+    const roomRef = ref(database, `rooms/${roomId}`);
+    onValue(roomRef, async (snapshot) => {
+        const room = snapshot.val();
+        if (!room) return;
+
+        if (room.status === 'playing') {
+            showContainer('game');
+            elements.loadingSpinner.style.display = 'none';
+            elements.waitingMessage.style.display = 'none';
+            initializeGame(roomId);
+        }
+    });
+}
+
+async function initializeGame(roomId) {
+    const deck = createDeck();
+    const roomSnapshot = await get(ref(database, `rooms/${roomId}`));
+    const room = roomSnapshot.val();
+    const playerIds = Object.keys(room.players);
+
+    const players = {};
+    playerIds.forEach(playerId => {
+        players[playerId] = {
+            hand: deck.splice(0, 7),
+            uno: false
+        };
+    });
+
+    const initialState = {
+        deck: deck,
+        discardPile: [deck.pop()],
+        currentPlayer: playerIds[0],
+        direction: 1,
+        players: players,
+        status: 'playing'
+    };
+
+    await update(ref(database, `rooms/${roomId}`), {
+        gameState: initialState
+    });
+
+    startGameLoop(roomId);
+}
+
+function createDeck() {
+    const colors = ['red', 'blue', 'green', 'yellow'];
+    const numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    const deck = [];
+
+    colors.forEach(color => {
+        numbers.forEach(number => {
+            deck.push({ color, value: number });
+            if (number !== '0') deck.push({ color, value: number });
+        });
+    });
+
+    for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+
+    return deck;
+}
+
+function startGameLoop(roomId) {
+    const gameStateRef = ref(database, `rooms/${roomId}/gameState`);
+    onValue(gameStateRef, (snapshot) => {
+        const gameState = snapshot.val();
+        if (!gameState) return;
+
+        renderGameState(gameState);
+    });
+}
+
+function renderGameState(gameState) {
+    const userId = auth.currentUser.uid;
+    const playerHand = gameState.players[userId].hand;
+    const topCard = gameState.discardPile.slice(-1)[0];
+
+    elements.currentCard.innerHTML = `
+        <div class="card" style="background-color: ${topCard.color}">
+            ${topCard.value}
+        </div>
+    `;
+
+    elements.playerHand.innerHTML = playerHand.map((card, index) => `
+        <div class="card" style="background-color: ${card.color}">
+            ${card.value}
+        </div>
+    `).join('');
+}
+
+// Handle room invitations
+window.addEventListener('load', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomId = urlParams.get('room');
+    if (roomId) joinRoom(roomId);
+});
+</script>
+</body>
+</html>
